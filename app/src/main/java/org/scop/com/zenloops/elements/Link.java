@@ -1,11 +1,7 @@
 package org.scop.com.zenloops.elements;
 
 import android.graphics.Canvas;
-import android.graphics.drawable.VectorDrawable;
-
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.List;
+import android.graphics.drawable.Drawable;
 
 /**
  * Created by Oscar on 18/09/2016.
@@ -23,16 +19,21 @@ public class Link {
     public static final int BOTL = 4;
     public static final int TOPL = 5;
 
+    public static final int MARGS_X = 158;
+    public static final int MARGS_Y = 91;
+
     private Link[] neighboors;
     private boolean[] active;
     private int type;
     private boolean isTopRow;
     private int rotation,posX,posY;
-    private VectorDrawable vector;
+    private Drawable vector;
 
-    public Link(int type, boolean isTopRow) {
-        this.isTopRow = isTopRow;
+    public Link(int type, int x, int y) {
+        this.isTopRow = (x+y)%2==0;//isTopRow;
         this.type = type;
+        this.posX = x;
+        this.posY = y;
         this.active = new boolean[6];
         this.neighboors = new Link[6];
 
@@ -54,7 +55,7 @@ public class Link {
             rotation=60;
         }
 
-        vector = LinkVector.getInstance().getVectorDrawable(type);
+        vector = LinkGraphics.getInstance().getDrawable(type);
     }
 
     public void setNeighboor(Link l, int position, boolean bidirectional){
@@ -75,24 +76,73 @@ public class Link {
         rotation += 120;
     }
 
-    public int getType() {
-        return type;
+    public int getConnections() {
+        switch(type){
+            case TYPE1: return 1;
+            case TYPE2: return 2;
+            default: return 3;
+        }
     }
 
-    public void draw(Canvas canvas, float parentX, float parentY){
-        float scale = 1;
-        int x = posX;
-        int y = posY;
+    public int getNeighboorCount() {
+        int count = 0;
+        for (Link l : neighboors){
+            if (l!=null) count++;
+        }
+        return count;
+    }
+
+    public int getFreeLinks(){
+        return getConnections()-getNeighboorCount();
+    }
+
+    public void setType(int type){
+        this.type = type;
+        vector = LinkGraphics.getInstance().getDrawable(type);
+    }
+
+
+
+    public boolean itsMe(float x, float y){
+        float x0 = posX*MARGS_X;
+        float y0 = posY*MARGS_Y*3;
 
         if (!isTopRow){
-            x+=158;
-            y+=91;
+            y0+=MARGS_Y;
         }
 
-        vector.setBounds((int) (x * scale), (int) (y * scale), (int) ((x + 200) * scale), (int) ((y + 200) * scale));
+        float xf = x0 + LinkGraphics.WIDTH;
+        float yf = y0 + LinkGraphics.HEIGHT;
+
+        if (x0 <= x && x <= xf && y0 <= y && y <= yf){
+            return true;
+        }
+        return false;
+    }
+
+    public void draw(Canvas canvas, float parentX, float parentY, float scale, float wCut, float hCut){
+        float x = posX*MARGS_X+parentX;
+        float y = posY*MARGS_Y*3+parentY;
+
+        if (!isTopRow){
+            y+=MARGS_Y;
+        }
+
+        if (x>wCut || y>hCut){
+            return;
+        }
+
+        float xwScaled = (x + LinkGraphics.WIDTH) * scale;
+        float yhScaled = (y + LinkGraphics.HEIGHT) * scale;
+
+        if (xwScaled<0 || yhScaled<0){
+            return;
+        }
+
+        vector.setBounds((int) (x * scale), (int) (y * scale), (int) (xwScaled), (int) (yhScaled));
 
         int save_status =  canvas.save();
-        canvas.rotate(rotation, (x+100)*scale, (y+100)*scale);
+        canvas.rotate(rotation, (x+LinkGraphics.WIDTH/2)*scale, (y+LinkGraphics.HEIGHT/2)*scale);
         vector.draw(canvas);
         canvas.restoreToCount(save_status);
     }
