@@ -98,7 +98,7 @@ public class Grid {
 
         if (c>0) l.add(Link.TYPE1);
 
-        if (x==0 && (y==0 || y==height-1) || y==0 && x==mixedRows-1){
+        if (x==0 && (y==0 || y==height-1) || height%2!=0 && y==0 && x==mixedRows-1){
             return l;
         }
         if (c>1){
