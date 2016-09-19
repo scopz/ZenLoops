@@ -4,6 +4,7 @@ import android.graphics.Canvas;
 import android.view.View;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -51,123 +52,109 @@ public class Grid {
     }
 
     // RANDOM FILLER:
-    public List<CandidatePack> getIdxLinks(int x, int y){
-        List<CandidatePack> l = new ArrayList<>();
+    public List<int[]> getNeighborLinks(int x, int y){
+        List<int[]> l = new ArrayList<>();
         boolean even = x%2==0;
         boolean isT = y%2==0;
         if (!even) isT = !isT;
 
         if (isT){
-            if (y>0) l.add(new CandidatePack(Link.TOP,x,y-1));
-            if (x>0) l.add(new CandidatePack(Link.BOTL,x-1,y));
-            if (x<this.mixedRows-1) l.add(new CandidatePack(Link.BOTR,x+1,y));
+            if (y>0) l.add(new int[]{x, y-1});
+            if (x>0) l.add(new int[]{x-1, y});
+            if (x<this.mixedRows-1) l.add(new int[]{x+1, y});
         } else {
-            if (x>0) l.add(new CandidatePack(Link.TOPL,x-1,y));
-            if (x<this.mixedRows-1) l.add(new CandidatePack(Link.TOPR,x+1,y));
-            if (y<this.height-1) l.add(new CandidatePack(Link.BOT,x,y+1));
+            if (x>0) l.add(new int[]{x-1, y});
+            if (x<this.mixedRows-1) l.add(new int[]{x+1, y});
+            if (y<this.height-1) l.add(new int[]{x, y+1});
         }
         return l;
     }
 
-    public boolean isAvailable(int x,int y){
-        if (0 <= x && x < mixedRows && 0 <= y && y < height){
-            Link l = pieces[x][y];
-            if (l==null){
-                return true;
-            } else {
-                return l.getFreeLinks()>0;
+    public void randomFill(){
+        Node[][] schema = new Node[mixedRows][height];
+        Node n,n2;
+
+        for (int i=0; i<mixedRows; i++){
+            for (int j=0; j<height; j++){
+                n = getNode(schema,i,j);
+                if (n.value==3) continue;
+
+                List<int[]> cps = getNeighborLinks(i,j);
+                Collections.shuffle(cps);
+
+                for (int[] cp : cps){
+                    n2 = getNode(schema,cp[0],cp[1]);
+                    if (n2.value==3) continue;
+
+                    if (!n.hasLink(cp[0],cp[1])){
+                        n.addNode(cp[0],cp[1]);
+                        n2.addNode(i,j);
+                        break;
+                    }
+                }
             }
-        } else {
+        }
+        convert(schema);
+    }
+
+    public Node getNode(Node[][] s, int x, int y){
+        if (s[x][y]==null){
+            Node n = new Node();
+            s[x][y] = n;
+            return n;
+        }
+        return s[x][y];
+    }
+
+    private void convert(Node[][] a){
+        Random r = new Random();
+        Node n;
+        Link l;
+        int rotations;
+        int type;
+        pieces = new Link[mixedRows][height];
+        for (int i=0; i<a.length; i++){
+            for (int j=0; j<a[0].length; j++){
+                n = a[i][j];
+                if (n != null && n.value > 0){
+                    type = n.value>2? (r.nextBoolean()? Link.TYPE3a:(r.nextBoolean()? Link.TYPE3a:Link.TYPE3b)) : n.value;
+                    l = new Link(type,i,j);
+                    pieces[i][j] = l;
+                    rotations = r.nextInt(3);
+                    for (int rot=0;rot < rotations; rot++){
+                        l.rotate();
+                    }
+                }
+            }
+        }
+    }
+
+    class Node{
+        public int value;
+        public int[][] nodeLinks;
+        public int num = 0;
+
+        public Node() {
+            this.value = 0;
+            this.nodeLinks = new int[3][2];
+            this.num = 0;
+        }
+        public boolean addNode(int x, int y){
+            if (num<3){
+                nodeLinks[num][0] = x;
+                nodeLinks[num][1] = y;
+                num++;
+                value++;
+                return true;
+            }
             return false;
         }
-    }
-
-    public int nearAvailable(int x, int y){
-        int c = 0;
-        boolean isT = (x+y)%2==0;
-        if (isAvailable(x-1,y)) c++;
-        if (isAvailable(x+1,y)) c++;
-        if (isAvailable(x,isT? (y-1):(y+1))) c++;
-        return c;
-    }
-    public List<Integer> typesAvailable(int x, int y) {
-        boolean isT = (x+y)%2==0;
-        List<Integer> l = new ArrayList<>();
-
-        int c = nearAvailable(x,y);
-
-        if (c>0) l.add(Link.TYPE1);
-
-        if (x==0 && (y==0 || y==height-1) || height%2!=0 && y==0 && x==mixedRows-1){
-            return l;
-        }
-        if (c>1){
-            l.add(Link.TYPE2);
-        }
-        if (x==0 || y==0 || y==height-1 || x==mixedRows-1){
-            return l;
-        }
-        if (c>2) {
-            l.add(Link.TYPE3a);
-            l.add(Link.TYPE3b);
-        }
-        return l;
-    }
-
-
-    public void recursiveFill(Random r, int x, int y, Link l){
-        int possible = l.getConnections();
-        List<CandidatePack> cons = getIdxLinks(x, y);
-        int act = 0;
-        CandidatePack cp0 = null;
-        for (CandidatePack cp : cons){
-            if (pieces[cp.x][cp.y] != null) continue;
-            cp0 = cp;
-            List<Integer> ta = typesAvailable(cp.x, cp.y);
-            if (ta.size()==0) continue;
-
-            int link = ta.get(r.nextInt(ta.size()));
-            Link l2 = new Link(link,cp.x,cp.y);
-
-            l.setNeighboor(l2, cp.direction);
-            pieces[cp.x][cp.y] = l2;
-
-            recursiveFill(r, cp.x, cp.y, l2);
-            if ((++act)==possible) break;
-        }
-    }
-    public void randomFill(){
-        pieces = new Link[mixedRows][height];
-        Random rnd = new Random();
-
-        //int x0=rnd.nextInt(mixedRows);
-        //int y0=rnd.nextInt(height);
-
-        //List<Integer> ta = typesAvailable(x0, y0);
-        //int idx = rnd.nextInt(ta.size());
-
-        //Link l = new Link(idx,x0,y0);
-        //pieces[x0][y0] = l;
-
-        //recursiveFill(rnd,x0,y0,l);
-
-        Link l = new Link(Link.TYPE3a,1,0);
-        pieces[1][0] = l;
-
-        Link l2 = new Link(Link.TYPE3b,1,1);
-        l.setNeighboor(l2,Link.BOT);
-        pieces[1][1] = l2;
-
-        recursiveFill(rnd,1,0,l);
-        recursiveFill(rnd,1,1,l2);
-    }
-
-    class CandidatePack{
-        public int direction,x,y;
-        public CandidatePack(int direction, int x, int y) {
-            this.direction = direction;
-            this.x = x;
-            this.y = y;
+        public boolean hasLink(int x,int y){
+            for (int i=0; i<num;i++){
+                if (nodeLinks[i][0]==x && nodeLinks[i][1]==y)
+                    return true;
+            }
+            return false;
         }
     }
 }

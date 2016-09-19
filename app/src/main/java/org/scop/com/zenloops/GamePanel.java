@@ -22,7 +22,7 @@ public class GamePanel extends View {
     public GamePanel(Context context) {
         super(context);
         LinkGraphics.getInstance().loadGraphics(this.getContext());
-        grid = new Grid(this,2,2);
+        grid = new Grid(this,3,7);
         grid.randomFill();
         this.scaleDetector = new ScaleGestureDetector(context, new ScaleListener());
         this.scaleDetector.setQuickScaleEnabled(false);
@@ -32,6 +32,7 @@ public class GamePanel extends View {
     @Override
     public void draw(Canvas canvas) {
         super.draw(canvas);
+        canvas.drawColor(0xFF000000);
         grid.draw(canvas,x,y,scale,wScaled,hScaled);
     }
 
