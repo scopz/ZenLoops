@@ -74,6 +74,11 @@ public class Link {
 
     public void rotate() {
         rotation += 120;
+        boolean[] newActive = new boolean[6];
+        for (int i = 0; i < 6; i++) {
+            newActive[(i+2)%6] = active[i];
+        }
+        active = newActive;
     }
 
     public int getConnections() {
@@ -96,12 +101,19 @@ public class Link {
         return getConnections()-getNeighboorCount();
     }
 
-    public void setType(int type){
-        this.type = type;
-        vector = LinkGraphics.getInstance().getDrawable(type);
+    public boolean isConnected(){
+        for (int i = 0; i < 6; i++) {
+            if (active[i]){
+                if (neighboors[i]==null || !neighboors[i].isConnected(this,(i+3)%6))
+                    return false;
+            }
+        }
+        return true;
     }
 
-
+    public boolean isConnected(Link me, int position){
+        return active[position] && neighboors[position] == me;
+    }
 
     public boolean itsMe(float x, float y){
         float x0 = posX*MARGS_X;

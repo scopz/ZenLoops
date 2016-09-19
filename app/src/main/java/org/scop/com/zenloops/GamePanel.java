@@ -22,7 +22,7 @@ public class GamePanel extends View {
     public GamePanel(Context context) {
         super(context);
         LinkGraphics.getInstance().loadGraphics(this.getContext());
-        grid = new Grid(this,3,7);
+        grid = new Grid(this,9,17);
         grid.randomFill();
         this.scaleDetector = new ScaleGestureDetector(context, new ScaleListener());
         this.scaleDetector.setQuickScaleEnabled(false);
@@ -32,7 +32,7 @@ public class GamePanel extends View {
     @Override
     public void draw(Canvas canvas) {
         super.draw(canvas);
-        canvas.drawColor(0xFF000000);
+        canvas.drawColor(grid.isFinished()? 0xFFFFFFFF : 0xFF000000);
         grid.draw(canvas,x,y,scale,wScaled,hScaled);
     }
 
@@ -40,8 +40,8 @@ public class GamePanel extends View {
     private boolean isResizing = false;
     private boolean isMoving = false;
     private float w,h,x,y,wScaled=0,hScaled=0,scale=1;
-    private float minScale = 0.7f;
-    private float maxScale = 5f;
+    private float minScale = 0.3f;
+    private float maxScale = 2f;
     private float dragXpos,dragYpos;
 
     @Override
@@ -120,6 +120,14 @@ public class GamePanel extends View {
     }
     private class GestureListener extends GestureDetector.SimpleOnGestureListener {
         @Override
+        public void onLongPress(MotionEvent e) {
+            //if (grid.isFinished()){
+                grid.restartNew();
+                postInvalidate();
+            //}
+        }
+
+        @Override
         public boolean onSingleTapUp(MotionEvent e) {
             GamePanel p = GamePanel.this;
             float x = e.getX()/p.scale-p.x;
@@ -127,6 +135,7 @@ public class GamePanel extends View {
             Link l = grid.getLink(x,y);
             if (l!=null){
                 l.rotate();
+                grid.validate();
                 postInvalidate();
             }
             return true;
