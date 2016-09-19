@@ -107,7 +107,7 @@ public class Grid {
             }
         } else {
             boolean res;
-            int x,y,pulses = Math.round(mixedRows*height*0.76f);
+            int x,y,pulses = Math.round(mixedRows*height*(r.nextFloat()/3f+0.53f));
             for (int i=0; i<pulses; i++){
                 x = r.nextInt(mixedRows);
                 y = r.nextInt(height);

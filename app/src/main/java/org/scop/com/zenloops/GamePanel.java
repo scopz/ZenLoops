@@ -22,7 +22,7 @@ public class GamePanel extends View {
     public GamePanel(Context context) {
         super(context);
         LinkGraphics.getInstance().loadGraphics(this.getContext());
-        grid = new Grid(this,9,17);
+        grid = new Grid(this,12,21);
         grid.randomFill();
         this.scaleDetector = new ScaleGestureDetector(context, new ScaleListener());
         this.scaleDetector.setQuickScaleEnabled(false);
