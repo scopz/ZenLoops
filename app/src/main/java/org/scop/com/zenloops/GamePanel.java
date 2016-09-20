@@ -11,6 +11,14 @@ import org.scop.com.zenloops.elements.Grid;
 import org.scop.com.zenloops.elements.Link;
 import org.scop.com.zenloops.elements.LinkGraphics;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 /**
  * Created by Oscar on 18/09/2016.
  */
@@ -18,12 +26,18 @@ public class GamePanel extends View {
     private Grid grid;
     private ScaleGestureDetector scaleDetector;
     private GestureDetector gestureDetector;
+    public static final String SAVE_STATE_PATH = "/sdcard/ZenLoops/savesstate.save";
 
-    public GamePanel(Context context) {
+    public GamePanel(Context context, boolean load) {
         super(context);
         LinkGraphics.getInstance().loadGraphics(this.getContext());
-        grid = new Grid(this,12,21);
-        grid.randomFill();
+        if (load){
+            load = loadState();
+        }
+        if (!load){
+            grid = new Grid(this,10,21);
+            grid.randomFill();
+        }
         this.scaleDetector = new ScaleGestureDetector(context, new ScaleListener());
         this.scaleDetector.setQuickScaleEnabled(false);
         this.gestureDetector = new GestureDetector(context, new GestureListener());
@@ -32,14 +46,71 @@ public class GamePanel extends View {
     @Override
     public void draw(Canvas canvas) {
         super.draw(canvas);
-        canvas.drawColor(grid.isFinished()? 0xFFFFFFFF : 0xFF000000);
+        canvas.drawColor(grid.isFinished() ? 0xFFFFFFFF : 0xFF000000);
         grid.draw(canvas,x,y,scale,wScaled,hScaled);
+    }
+
+    public void saveState(){
+        try {
+            new File(SAVE_STATE_PATH.substring(0,SAVE_STATE_PATH.lastIndexOf("/"))).mkdirs();
+            File f = new File(SAVE_STATE_PATH);
+            if (f.exists()) f.delete();
+            FileOutputStream fos = new FileOutputStream (f);
+            DataOutputStream dos = new DataOutputStream(fos);
+
+            String str = grid.toPack();
+            str+=":"+(int)x+":"+(int)y+":"+(int)(scale*100)+"|";
+
+            char[] map = str.toCharArray();
+            for (char c : map)
+                dos.writeChar(c);
+            dos.close();
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public boolean loadState(){
+        try {
+            File f = new File(SAVE_STATE_PATH);
+            FileInputStream fis = new FileInputStream (f);
+            DataInputStream dis = new DataInputStream(fis);
+
+            String str = "";
+            while (true) {
+                char c = dis.readChar();
+                if (c=='|') break;
+                str += c;
+            }
+
+            dis.close();
+            fis.close();
+
+            String[] read = str.split(":");
+
+            grid = new Grid(this,Integer.parseInt(read[0]),Integer.parseInt(read[1]));
+            grid.fromPack(read[2]);
+
+            x = Integer.parseInt(read[3]);
+            y = Integer.parseInt(read[4]);
+            scale = Integer.parseInt(read[5])/100f;
+            wScaled = w/scale;
+            hScaled = h/scale;
+            postInvalidate();
+            return true;
+        } catch (EOFException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     // CONTROLS:
     private boolean isResizing = false;
     private boolean isMoving = false;
-    private float w,h,x,y,wScaled=0,hScaled=0,scale=1;
+    private float w,h,x,y,wScaled=0,hScaled=0,scale=0.7f;
     private float minScale = 0.3f;
     private float maxScale = 2f;
     private float dragXpos,dragYpos;
@@ -48,9 +119,8 @@ public class GamePanel extends View {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         this.w = w;
         this.h = h;
-        this.scale=1;
-        this.hScaled = h;
-        this.wScaled = w;
+        this.hScaled = h/scale;
+        this.wScaled = w/scale;
         super.onSizeChanged(w, h, oldw, oldh);
     }
 
@@ -122,9 +192,10 @@ public class GamePanel extends View {
         @Override
         public void onLongPress(MotionEvent e) {
             //if (grid.isFinished()){
+            if (!isResizing && !isMoving){
                 grid.restartNew();
                 postInvalidate();
-            //}
+            }
         }
 
         @Override
@@ -146,6 +217,7 @@ public class GamePanel extends View {
         }
         @Override
         public boolean onDoubleTapEvent(MotionEvent e) {
+            if (e.getAction()!=MotionEvent.ACTION_DOWN) isMoving = true;
             if (e.getAction()!=MotionEvent.ACTION_UP) return false;
             onSingleTapUp(e);
             return true;

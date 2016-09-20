@@ -34,7 +34,13 @@ public class GameActivity extends Activity {
             level = extras.getInt("level");
         }
 
-        gamepanel = new GamePanel(this);
+        gamepanel = new GamePanel(this,true);
         setContentView(gamepanel);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        gamepanel.saveState();
     }
 }

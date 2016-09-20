@@ -74,6 +74,7 @@ public class Link {
 
     public void rotate() {
         rotation += 120;
+        rotation %= 360;
         boolean[] newActive = new boolean[6];
         for (int i = 0; i < 6; i++) {
             newActive[(i+2)%6] = active[i];
@@ -159,5 +160,11 @@ public class Link {
         canvas.restoreToCount(save_status);
     }
 
+    public int getType() {
+        return type;
+    }
 
+    public int getRotation() {
+        return rotation;
+    }
 }

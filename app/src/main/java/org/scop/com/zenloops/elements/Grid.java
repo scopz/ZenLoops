@@ -22,14 +22,6 @@ public class Grid {
         this.mixedRows = width*2;
         this.height = height;
         this.view = view;
-
-        pieces = new Link[mixedRows][height];
-
-        for (int i = 0; i<pieces.length; i++){
-            for (int j = 0; j<pieces[0].length; j++){
-                pieces[i][j] = new Link(Link.TYPE3a,i,j);
-            }
-        }
     }
 
     public Link getLink(float x, float y){
@@ -116,6 +108,7 @@ public class Grid {
             }
         }
         convert(r,schema);
+        examineNeighbor();
         validate();
     }
 
@@ -164,6 +157,9 @@ public class Grid {
                 }
             }
         }
+    }
+
+    private void examineNeighbor(){
         for (int i=0; i<pieces.length; i++){
             for (int j=0; j<pieces[0].length; j++){
                 Link l = pieces[i][j];
@@ -214,5 +210,60 @@ public class Grid {
             this.x = x;
             this.y = y;
         }
+    }
+
+    public String toPack(){
+        String str = (mixedRows/2)+":"+height+":";
+        for (int i=0; i<pieces.length; i++){
+            for (int j=0; j<pieces[0].length; j++){
+                Link l = pieces[i][j];
+                if (l==null){
+                    str+="_";
+                    continue;
+                }
+                int rot = l.getRotation();
+                switch(l.getType()){
+                    case Link.TYPE1:  str+= rot<70? "q" : (rot<190? "t": "p"); break;
+                    case Link.TYPE2:  str+= rot<70? "e" : (rot<190? "i": "s"); break;
+                    case Link.TYPE3a: str+= rot<70? "w" : (rot<190? "u": "a"); break;
+                    case Link.TYPE3b: str+= rot<70? "r" : (rot<190? "y": "o"); break;
+                    default: return null;
+                }
+            }
+        }
+        return str;
+    }
+
+    public void fromPack(String str){
+        pieces = new Link[mixedRows][height];
+        int k = 0;
+        for (int i=0; i<mixedRows; i++){
+            for (int j=0; j<height; j++){
+                Link l = null;
+
+                switch(str.charAt(k)){
+                    case 'q': l = new Link(Link.TYPE1,i,j); break;
+                    case 't': l = new Link(Link.TYPE1,i,j); l.rotate(); break;
+                    case 'p': l = new Link(Link.TYPE1,i,j); l.rotate(); l.rotate(); break;
+
+                    case 'e': l = new Link(Link.TYPE2,i,j); break;
+                    case 'i': l = new Link(Link.TYPE2,i,j); l.rotate(); break;
+                    case 's': l = new Link(Link.TYPE2,i,j); l.rotate(); l.rotate(); break;
+
+                    case 'w': l = new Link(Link.TYPE3a,i,j); break;
+                    case 'u': l = new Link(Link.TYPE3a,i,j); l.rotate(); break;
+                    case 'a': l = new Link(Link.TYPE3a,i,j); l.rotate(); l.rotate(); break;
+
+                    case 'r': l = new Link(Link.TYPE3b,i,j); break;
+                    case 'y': l = new Link(Link.TYPE3b,i,j); l.rotate(); break;
+                    case 'o': l = new Link(Link.TYPE3b,i,j); l.rotate(); l.rotate(); break;
+                    default: break;
+                }
+                pieces[i][j] = l;
+                k++;
+            }
+        }
+        examineNeighbor();
+        validate();
     }
 }
