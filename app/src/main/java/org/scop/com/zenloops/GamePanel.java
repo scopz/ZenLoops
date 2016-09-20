@@ -59,7 +59,7 @@ public class GamePanel extends View {
             DataOutputStream dos = new DataOutputStream(fos);
 
             String str = grid.toPack();
-            str+=":"+(int)x+":"+(int)y+":"+(int)(scale*100)+"|";
+            str+=":"+(int)-x+":"+(int)-y+":"+(int)(scale*100)+"|";
 
             char[] map = str.toCharArray();
             for (char c : map)
@@ -92,8 +92,8 @@ public class GamePanel extends View {
             grid = new Grid(this,Integer.parseInt(read[0]),Integer.parseInt(read[1]));
             grid.fromPack(read[2]);
 
-            x = Integer.parseInt(read[3]);
-            y = Integer.parseInt(read[4]);
+            x = -Integer.parseInt(read[3]);
+            y = -Integer.parseInt(read[4]);
             scale = Integer.parseInt(read[5])/100f;
             wScaled = w/scale;
             hScaled = h/scale;
@@ -110,15 +110,21 @@ public class GamePanel extends View {
     // CONTROLS:
     private boolean isResizing = false;
     private boolean isMoving = false;
-    private float w,h,x,y,wScaled=0,hScaled=0,scale=0.7f;
+    private float w,h,x,y,wScaled,hScaled,scale=0.7f;
     private float minScale = 0.3f;
     private float maxScale = 2f;
-    private float dragXpos,dragYpos;
+    private float posX0,posY0;
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         this.w = w;
         this.h = h;
+        int[] vp = grid.getViewport();
+
+        this.minScale = Math.min( (float)w/vp[0], (float)h/vp[1])*0.95f;
+        this.maxScale = Math.min( (float)w/LinkGraphics.WIDTH/3, (float)h/LinkGraphics.HEIGHT/3);
+        this.scale = (this.minScale*3+this.maxScale)/4;
+
         this.hScaled = h/scale;
         this.wScaled = w/scale;
         super.onSizeChanged(w, h, oldw, oldh);
@@ -132,8 +138,8 @@ public class GamePanel extends View {
             int action = e.getActionMasked();
             switch (action) {
                 case MotionEvent.ACTION_DOWN:
-                    dragXpos = e.getX();
-                    dragYpos = e.getY();
+                    posX0 = e.getX();
+                    posY0 = e.getY();
                     break;
 
                 case MotionEvent.ACTION_MOVE:
@@ -142,14 +148,15 @@ public class GamePanel extends View {
                     float X = e.getX();
                     float Y = e.getY();
 
-                    int dx = Math.round((X - dragXpos) / scale);
-                    int dy = Math.round((Y - dragYpos) / scale);
+                    int dx = Math.round((X - posX0) / scale);
+                    int dy = Math.round((Y - posY0) / scale);
 
                     if (isMoving || Math.abs(dx)+Math.abs(dy)>35){
-                        dragXpos = X;
-                        dragYpos = Y;
+                        posX0 = X;
+                        posY0 = Y;
                         x+=dx;
                         y+=dy;
+                        adjustXY();
                         this.isMoving = true;
                         postInvalidate();
                     }
@@ -165,6 +172,25 @@ public class GamePanel extends View {
             }
         }
         return true;//super.onTouchEvent(event);
+    }
+
+    private void adjustXY(){
+        int[] vp = grid.getViewport();
+
+        float halfWScaled = wScaled/2,
+                halfHScaled = hScaled/2;
+        vp[0] += halfWScaled;
+        vp[1] += halfHScaled;
+
+        //halfWScaled = Math.max(halfWScaled,2000);
+        if (x>halfWScaled) x=halfWScaled;
+        if (y>halfHScaled) y=halfHScaled;
+
+        float iw = x-wScaled;
+        float ih = y-hScaled;
+
+        if (-iw>vp[0]) x = wScaled-vp[0];
+        if (-ih>vp[1]) y = hScaled-vp[1];
     }
 
     private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {

@@ -15,6 +15,7 @@ public class Grid {
     private int mixedRows,height;
     private Link[][] pieces;
     private boolean finished = false;
+    private int vpWidth,vpHeight;
 
     private View view;
 
@@ -22,6 +23,9 @@ public class Grid {
         this.mixedRows = width*2;
         this.height = height;
         this.view = view;
+
+        this.vpWidth = mixedRows*Link.MARGS_X+LinkGraphics.WIDTH-Link.MARGS_X;
+        this.vpHeight = height*Link.MARGS_Y*3+LinkGraphics.HEIGHT-Link.MARGS_Y;
     }
 
     public Link getLink(float x, float y){
@@ -265,5 +269,9 @@ public class Grid {
         }
         examineNeighbor();
         validate();
+    }
+
+    public int[] getViewport(){
+        return new int[] {vpWidth,vpHeight};
     }
 }
