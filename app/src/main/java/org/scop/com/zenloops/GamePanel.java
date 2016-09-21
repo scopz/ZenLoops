@@ -1,6 +1,7 @@
 package org.scop.com.zenloops;
 
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.graphics.Canvas;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -27,9 +28,13 @@ public class GamePanel extends View {
     private ScaleGestureDetector scaleDetector;
     private GestureDetector gestureDetector;
     public static final String SAVE_STATE_PATH = "/sdcard/ZenLoops/savesstate.save";
+    public String save_state_path = SAVE_STATE_PATH;
 
     public GamePanel(Context context, boolean load) {
         super(context);
+
+        this.save_state_path = new ContextWrapper(context).getFilesDir().getPath()+"/state.save";
+
         LinkGraphics.getInstance().loadGraphics(this.getContext());
         if (load){
             load = loadState();
@@ -52,8 +57,8 @@ public class GamePanel extends View {
 
     public void saveState(){
         try {
-            new File(SAVE_STATE_PATH.substring(0,SAVE_STATE_PATH.lastIndexOf("/"))).mkdirs();
-            File f = new File(SAVE_STATE_PATH);
+            new File(save_state_path.substring(0,save_state_path.lastIndexOf("/"))).mkdirs();
+            File f = new File(save_state_path);
             if (f.exists()) f.delete();
             FileOutputStream fos = new FileOutputStream (f);
             DataOutputStream dos = new DataOutputStream(fos);
@@ -73,7 +78,7 @@ public class GamePanel extends View {
 
     public boolean loadState(){
         try {
-            File f = new File(SAVE_STATE_PATH);
+            File f = new File(save_state_path);
             FileInputStream fis = new FileInputStream (f);
             DataInputStream dis = new DataInputStream(fis);
 
@@ -110,7 +115,7 @@ public class GamePanel extends View {
     // CONTROLS:
     private boolean isResizing = false;
     private boolean isMoving = false;
-    private float w,h,x,y,wScaled,hScaled,scale=0.7f;
+    private float w,h,x,y,wScaled,hScaled,scale=0;
     private float minScale = 0.3f;
     private float maxScale = 2f;
     private float posX0,posY0;
@@ -121,9 +126,9 @@ public class GamePanel extends View {
         this.h = h;
         int[] vp = grid.getViewport();
 
-        this.minScale = Math.min( (float)w/vp[0], (float)h/vp[1])*0.95f;
+        this.minScale = Math.min( (float)w/vp[0], (float)h/vp[1])*0.94f;
         this.maxScale = Math.min( (float)w/LinkGraphics.WIDTH/3, (float)h/LinkGraphics.HEIGHT/3);
-        this.scale = (this.minScale*3+this.maxScale)/4;
+        if (this.scale==0) this.scale = (this.minScale*3+this.maxScale)/4;
 
         this.hScaled = h/scale;
         this.wScaled = w/scale;
