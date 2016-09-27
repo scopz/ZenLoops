@@ -48,11 +48,25 @@ public class GamePanel extends View {
         this.gestureDetector = new GestureDetector(context, new GestureListener());
     }
 
+    private int backgroundColor;
     @Override
     public void draw(Canvas canvas) {
         super.draw(canvas);
-        canvas.drawColor(grid.isFinished() ? 0xFFFFFFFF : 0xFF000000);
-        grid.draw(canvas,x,y,scale,wScaled,hScaled);
+        boolean update = false;
+        if (grid.isFinished()){
+            if (backgroundColor < 0xFFFFFFFF){
+                backgroundColor+= 0x000F0F0F;
+                update = true;
+    	        if (backgroundColor > 0xFFFFFFFF){
+    	            backgroundColor = 0xFFFFFFFF;
+	            }
+            }
+        } else {
+            backgroundColor = 0xFF000000;
+        }
+        canvas.drawColor(backgroundColor);
+        grid.draw(canvas, x, y, scale, wScaled, hScaled);
+        if (update) this.postInvalidate();
     }
 
     public void saveState(){
