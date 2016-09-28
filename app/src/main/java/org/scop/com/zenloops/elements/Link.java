@@ -3,10 +3,13 @@ package org.scop.com.zenloops.elements;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 
+import org.scop.com.zenloops.core.Animate;
+import org.scop.com.zenloops.core.Animator;
+
 /**
  * Created by Oscar on 18/09/2016.
  */
-public class Link {
+public class Link implements Animate{
     public static final int TYPE1 = 1;
     public static final int TYPE2 = 2;
     public static final int TYPE3a = 3;
@@ -26,7 +29,7 @@ public class Link {
     private boolean[] active;
     private int type;
     private boolean isTopRow;
-    private int rotation,posX,posY;
+    private int visibleRotation,rotation,posX,posY;
     private Drawable vector;
 
     public Link(int type, int x, int y) {
@@ -45,6 +48,7 @@ public class Link {
             active[BOTL] = type >= TYPE2;
             active[TOPL] = false;
             rotation=0;
+            visibleRotation=0;
         } else {
             active[TOP]  = false;
             active[TOPR] = type >= TYPE3a;
@@ -53,6 +57,7 @@ public class Link {
             active[BOTL] = false;
             active[TOPL] = type >= TYPE2;
             rotation=60;
+            visibleRotation=60;
         }
 
         vector = LinkGraphics.getInstance().getDrawable(type);
@@ -73,6 +78,9 @@ public class Link {
     }
 
     public void rotate() {
+        rotate(false);
+    }
+    public void rotate(boolean animate) {
         rotation += 120;
         rotation %= 360;
         boolean[] newActive = new boolean[6];
@@ -80,6 +88,18 @@ public class Link {
             newActive[(i+2)%6] = active[i];
         }
         active = newActive;
+        if (animate){
+            Animator.getInstance().addAnimation(this);
+        } else {
+            visibleRotation=rotation;
+        }
+    }
+
+    @Override
+    public boolean updateAnimation() {
+        visibleRotation+=15;
+        visibleRotation %= 360;
+        return visibleRotation!=rotation;
     }
 
     public int getConnections() {
@@ -155,7 +175,7 @@ public class Link {
         vector.setBounds((int) (x * scale), (int) (y * scale), (int) (xwScaled), (int) (yhScaled));
 
         int save_status =  canvas.save();
-        canvas.rotate(rotation, (x+LinkGraphics.WIDTH/2)*scale, (y+LinkGraphics.HEIGHT/2)*scale);
+        canvas.rotate(visibleRotation, (x+LinkGraphics.WIDTH/2)*scale, (y+LinkGraphics.HEIGHT/2)*scale);
         vector.draw(canvas);
         canvas.restoreToCount(save_status);
     }

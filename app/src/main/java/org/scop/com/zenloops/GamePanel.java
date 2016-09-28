@@ -8,6 +8,8 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 
+import org.scop.com.zenloops.core.Animate;
+import org.scop.com.zenloops.core.Animator;
 import org.scop.com.zenloops.elements.Grid;
 import org.scop.com.zenloops.elements.Link;
 import org.scop.com.zenloops.elements.LinkGraphics;
@@ -23,12 +25,13 @@ import java.io.IOException;
 /**
  * Created by Oscar on 18/09/2016.
  */
-public class GamePanel extends View {
+public class GamePanel extends View implements Animate {
     private Grid grid;
     private ScaleGestureDetector scaleDetector;
     private GestureDetector gestureDetector;
     public static final String SAVE_STATE_PATH = "/sdcard/ZenLoops/savesstate.save";
     public String save_state_path = SAVE_STATE_PATH;
+    public Animator animator;
 
     public GamePanel(Context context, boolean load) {
         super(context);
@@ -46,27 +49,38 @@ public class GamePanel extends View {
         this.scaleDetector = new ScaleGestureDetector(context, new ScaleListener());
         this.scaleDetector.setQuickScaleEnabled(false);
         this.gestureDetector = new GestureDetector(context, new GestureListener());
+        this.animator = Animator.getInstance(this);
     }
 
-    private int backgroundColor;
+    private int backgroundColor = 0xFF000000;
+    private boolean finishedNotified = false;
     @Override
     public void draw(Canvas canvas) {
         super.draw(canvas);
-        boolean update = false;
-        if (grid.isFinished()){
-            if (backgroundColor < 0xFFFFFFFF){
-                backgroundColor+= 0x000F0F0F;
-                update = true;
-    	        if (backgroundColor > 0xFFFFFFFF){
-    	            backgroundColor = 0xFFFFFFFF;
-	            }
-            }
-        } else {
-            backgroundColor = 0xFF000000;
+        if (grid.isFinished() != finishedNotified){
+            finishedNotified = !finishedNotified;
+            animator.addAnimation(this);
         }
         canvas.drawColor(backgroundColor);
         grid.draw(canvas, x, y, scale, wScaled, hScaled);
-        if (update) this.postInvalidate();
+    }
+
+    @Override
+    public boolean updateAnimation(){
+        if (grid.isFinished()){
+            backgroundColor+= 0x000F0F0F;
+            if (backgroundColor > 0xFFFFFFFF){
+                backgroundColor = 0xFFFFFFFF;
+                return false;
+            }
+        } else {
+            backgroundColor-= 0x00161616;
+            if (backgroundColor < 0xFF000000){
+                backgroundColor = 0xFF000000;
+                return false;
+            }
+        }
+        return true;
     }
 
     public void saveState(){
@@ -250,7 +264,7 @@ public class GamePanel extends View {
             float y = e.getY()/p.scale-p.y;
             Link l = grid.getLink(x,y);
             if (l!=null){
-                l.rotate();
+                l.rotate(true);
                 grid.validate();
                 postInvalidate();
             }
