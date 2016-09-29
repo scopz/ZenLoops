@@ -22,8 +22,8 @@ public class Link implements Animate{
     public static final int BOTL = 4;
     public static final int TOPL = 5;
 
-    public static final int MARGS_X = 158;
-    public static final int MARGS_Y = 91;
+    public static final int MARGS_X = 156;
+    public static final int MARGS_Y = 90;
 
     private Link[] neighboors;
     private boolean[] active;
@@ -165,19 +165,25 @@ public class Link implements Animate{
             return;
         }
 
-        float xwScaled = (x + LinkGraphics.WIDTH) * scale;
-        float yhScaled = (y + LinkGraphics.HEIGHT) * scale;
+        int xScaled = (int) (x * scale);
+        int yScaled = (int) (y * scale);
+        float xwScaled = xScaled + LinkGraphics.WIDTH * scale;
+        float yhScaled = yScaled + LinkGraphics.HEIGHT * scale;
 
         if (xwScaled<0 || yhScaled<0){
             return;
         }
 
-        vector.setBounds((int) (x * scale), (int) (y * scale), (int) (xwScaled), (int) (yhScaled));
+        vector.setBounds(xScaled, yScaled, (int) (xwScaled), (int) (yhScaled));
 
-        int save_status =  canvas.save();
-        canvas.rotate(visibleRotation, (x+LinkGraphics.WIDTH/2)*scale, (y+LinkGraphics.HEIGHT/2)*scale);
-        vector.draw(canvas);
-        canvas.restoreToCount(save_status);
+        if (visibleRotation==0) {
+            vector.draw(canvas);
+        } else {
+            int save_status = canvas.save();
+            canvas.rotate(visibleRotation, xScaled + LinkGraphics.WIDTH / 2 * scale, yScaled + LinkGraphics.HEIGHT / 2 * scale);
+            vector.draw(canvas);
+            canvas.restoreToCount(save_status);
+        }
     }
 
     public int getType() {
