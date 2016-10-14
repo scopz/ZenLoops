@@ -16,13 +16,19 @@ public class Grid {
     private Link[][] pieces;
     private boolean finished = false;
     private int vpWidth,vpHeight;
-
+    private float percent, tolerance;
     private View view;
 
     public Grid(View view, int width, int height) {
+        this(view,width,height,0.755f,0.105f);
+    }
+
+    public Grid(View view, int width, int height, float percent, float tolerance) {
         this.mixedRows = width*2;
         this.height = height;
         this.view = view;
+        this.percent = percent;
+        this.tolerance = tolerance;
 
         this.vpWidth = mixedRows*Link.MARGS_X+LinkGraphics.WIDTH-Link.MARGS_X;
         this.vpHeight = height*Link.MARGS_Y*3+LinkGraphics.HEIGHT-Link.MARGS_Y;
@@ -94,22 +100,13 @@ public class Grid {
         Random r = new Random();
         Node[][] schema = new Node[mixedRows][height];
 
-        boolean balanced = false;
-        if (balanced) {
-            for (int i=0; i<mixedRows; i++){
-                for (int j=0; j<height; j++){
-                    tryAddPulse(schema,i,j);
-                }
-            }
-        } else {
-            boolean res;
-            int x,y,pulses = Math.round(mixedRows*height*(r.nextFloat()/3f+0.53f));
-            for (int i=0; i<pulses; i++){
-                x = r.nextInt(mixedRows);
-                y = r.nextInt(height);
-                res = tryAddPulse(schema,x,y);
-                if (!res) i--;
-            }
+        boolean res;
+        int x,y,pulses = Math.round(mixedRows*height* (r.nextFloat()*tolerance*2 - tolerance + percent));
+        for (int i=0; i<pulses; i++){
+            x = r.nextInt(mixedRows);
+            y = r.nextInt(height);
+            res = tryAddPulse(schema,x,y);
+            if (!res) i--;
         }
         convert(r,schema);
         examineNeighbor();
@@ -217,7 +214,7 @@ public class Grid {
     }
 
     public String toPack(){
-        String str = (mixedRows/2)+":"+height+":";
+        String str = (mixedRows/2)+":"+height+":"+((int)(percent*10000))+":"+(int)(tolerance*10000)+":";
         for (int i=0; i<pieces.length; i++){
             for (int j=0; j<pieces[0].length; j++){
                 Link l = pieces[i][j];

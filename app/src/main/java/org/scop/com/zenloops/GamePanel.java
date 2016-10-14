@@ -43,7 +43,7 @@ public class GamePanel extends View implements Animate {
             load = loadState();
         }
         if (!load){
-            grid = new Grid(this,10,21);
+            grid = new Grid(this,10,21,0.755f,0.105f);
             grid.randomFill();
         }
         this.scaleDetector = new ScaleGestureDetector(context, new ScaleListener());
@@ -122,12 +122,12 @@ public class GamePanel extends View implements Animate {
 
             String[] read = str.split(":");
 
-            grid = new Grid(this,Integer.parseInt(read[0]),Integer.parseInt(read[1]));
-            grid.fromPack(read[2]);
+            grid = new Grid(this,Integer.parseInt(read[0]),Integer.parseInt(read[1]),Integer.parseInt(read[2])/10000f,Integer.parseInt(read[3])/10000f);
+            grid.fromPack(read[4]);
 
-            x = -Integer.parseInt(read[3]);
-            y = -Integer.parseInt(read[4]);
-            scale = Integer.parseInt(read[5])/100f;
+            x = -Integer.parseInt(read[5]);
+            y = -Integer.parseInt(read[6]);
+            scale = Integer.parseInt(read[7])/100f;
             wScaled = w/scale;
             hScaled = h/scale;
             postInvalidate();
