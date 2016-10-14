@@ -43,7 +43,7 @@ public class GamePanel extends View implements Animate {
             load = loadState();
         }
         if (!load){
-            grid = new Grid(this,10,21,0.755f,0.105f);
+            grid = new Grid(this,10*5/2,21*5/2,0.755f,0.105f);
             grid.randomFill();
         }
         this.scaleDetector = new ScaleGestureDetector(context, new ScaleListener());
@@ -154,7 +154,7 @@ public class GamePanel extends View implements Animate {
         this.h = h;
         int[] vp = grid.getViewport();
 
-        this.minScale = Math.min( (float)w/vp[0], (float)h/vp[1])*0.94f;
+        this.minScale = Math.min( (float)w/Math.min(vp[0],3164), (float)h/Math.min(vp[1],5780))*0.94f;
         this.maxScale = Math.min( (float)w/LinkGraphics.WIDTH/3, (float)h/LinkGraphics.HEIGHT/3);
         if (this.scale==0) this.scale = (this.minScale*3+this.maxScale)/4;
 
