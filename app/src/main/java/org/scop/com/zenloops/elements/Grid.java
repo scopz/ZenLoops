@@ -34,15 +34,34 @@ public class Grid {
         this.vpHeight = height*Link.MARGS_Y*3+LinkGraphics.HEIGHT-Link.MARGS_Y;
     }
 
+    private final int wb_v = (LinkGraphics.WIDTH-Link.MARGS_X)/2; //22
+    //private final int hb_v = (LinkGraphics.HEIGHT-Link.MARGS_Y)/2; //55
+    private final int mr_g = (LinkGraphics.HEIGHT-Link.MARGS_Y*2)/2; //10
+    private final int tramW = Link.MARGS_X*2;
+    private final int tramH = Link.MARGS_Y*3;
+
     public Link getLink(float x, float y){
-        for (Link[] r : pieces){
-            for (Link l : r){
-                if (l!=null && l.itsMe(x,y)){
-                    return l;
-                }
-            }
+        if (x<0 || y<0 || x >= this.vpWidth || y >= this.vpHeight){
+            return null;
         }
-        return null;
+        x-=wb_v; y-=mr_g;
+
+        int xTram = (int) x/tramW;
+        int yTram = (int) y/tramH;
+
+        int rx = (x%tramW > Link.MARGS_X)? 1:0;
+
+        int resX = xTram*2+rx;
+        int resY = yTram;
+
+        if (resX >= this.mixedRows){
+            resX = this.mixedRows-1;
+        }
+        if (resY >= this.height){
+            resY = this.height-1;
+        }
+
+        return pieces[resX][resY];
     }
 
     public boolean isFinished() {
