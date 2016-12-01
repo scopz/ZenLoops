@@ -29,8 +29,7 @@ public class GamePanel extends View implements Animate {
     private Grid grid;
     private ScaleGestureDetector scaleDetector;
     private GestureDetector gestureDetector;
-    public static final String SAVE_STATE_PATH = "/sdcard/ZenLoops/savesstate.save";
-    public String save_state_path = SAVE_STATE_PATH;
+    private String save_state_path;
     public Animator animator;
 
     public GamePanel(Context context, boolean load) {
@@ -262,9 +261,8 @@ public class GamePanel extends View implements Animate {
             GamePanel p = GamePanel.this;
             float x = e.getX()/p.scale-p.x;
             float y = e.getY()/p.scale-p.y;
-            Link l = grid.getLink(x,y);
-            if (l!=null){
-                l.rotate(true);
+            boolean success = grid.rotate(x,y);
+            if (success){
                 grid.validate();
                 postInvalidate();
             }

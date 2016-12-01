@@ -40,7 +40,7 @@ public class Grid {
     private final int tramW = Link.MARGS_X*2;
     private final int tramH = Link.MARGS_Y*3;
 
-    public Link getLink(float x, float y){
+    private Link getLink(float x, float y){
         if (x<0 || y<0 || x >= this.vpWidth || y >= this.vpHeight){
             return null;
         }
@@ -62,6 +62,33 @@ public class Grid {
         }
 
         return pieces[resX][resY];
+    }
+
+    public boolean rotate(float x, float y){
+        Link l = this.getLink(x,y);
+        if (l!=null){
+
+            List<Link> visited = new ArrayList();
+            boolean connected = seePieceLinked(l,visited);
+            if (connected) {
+                for (Link link : visited) {
+                    link.setLinked(false);
+                }
+            }
+
+            l.rotate(true);
+
+            visited = new ArrayList();
+            connected = seePieceLinked(l, visited);
+            if (connected) {
+                for (Link link : visited) {
+                    link.setLinked(true);
+                }
+            }
+
+            return true;
+        }
+        return false;
     }
 
     public boolean isFinished() {
@@ -94,6 +121,22 @@ public class Grid {
         }
         finished = true;
         return true;
+    }
+
+    private boolean seePieceLinked(Link l,List<Link> visited){
+        visited.add(l);
+        if (l.isConnected()){
+            List<Link> nbs = l.getConnectedNeighboor();
+            for (Link n : nbs){
+                if (n==null || visited.contains(n)) continue;
+                if (!seePieceLinked(n, visited)){
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 
     // RANDOM FILLER:
@@ -189,6 +232,25 @@ public class Grid {
                         Link l2 = pieces[nl.x][nl.y];
                         if (l2!=null) l.setNeighboor(l2,nl.direction);
                     }
+                }
+            }
+        }
+
+        // MARK LINKED:
+        List<Link> visited,analyzed = new ArrayList();
+        boolean connected;
+
+        for (int i=0; i<pieces.length; i++){
+            for (int j=0; j<pieces[0].length; j++){
+                Link l = pieces[i][j];
+                if (l == null || analyzed.contains(l)) continue;
+
+                visited = new ArrayList();
+                connected = seePieceLinked(l, visited);
+                analyzed.addAll(visited);
+
+                for (Link link : visited){
+                    link.setLinked(connected);
                 }
             }
         }

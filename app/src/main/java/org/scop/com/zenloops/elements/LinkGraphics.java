@@ -14,7 +14,7 @@ public class LinkGraphics {
 
     private static LinkGraphics factory;
     //private Paint paint;
-    private Drawable[] vectors;
+    private Drawable[] vectors,vectorsLinked;
 
     public static LinkGraphics getInstance(){
         if (factory==null){
@@ -36,10 +36,19 @@ public class LinkGraphics {
         vectors[1] = ctx.getDrawable(R.drawable.i_link);
         vectors[2] = ctx.getDrawable(R.drawable.i_double);
         vectors[3] = ctx.getDrawable(R.drawable.i_triple);
+
+        vectorsLinked = new Drawable[4];
+        vectorsLinked[0] = ctx.getDrawable(R.drawable.i_simple_l);
+        vectorsLinked[1] = ctx.getDrawable(R.drawable.i_link_l);
+        vectorsLinked[2] = ctx.getDrawable(R.drawable.i_double_l);
+        vectorsLinked[3] = ctx.getDrawable(R.drawable.i_triple_l);
     }
 
     public Drawable getDrawable(int type){
         return vectors[type-1];
+    }
+    public Drawable getLinkedDrawable(int type){
+        return vectorsLinked[type-1];
     }
 
 }

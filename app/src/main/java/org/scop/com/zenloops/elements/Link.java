@@ -6,6 +6,9 @@ import android.graphics.drawable.Drawable;
 import org.scop.com.zenloops.core.Animate;
 import org.scop.com.zenloops.core.Animator;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by Oscar on 18/09/2016.
  */
@@ -31,6 +34,7 @@ public class Link implements Animate{
     private boolean isTopRow;
     private int visibleRotation,rotation,posX,posY;
     private Drawable vector;
+    private boolean linked = false;
 
     public Link(int type, int x, int y) {
         this.isTopRow = (x+y)%2==0;//isTopRow;
@@ -72,9 +76,23 @@ public class Link implements Animate{
     public void setNeighboor(Link l, int position){
         this.setNeighboor(l, position, true);
     }
+    public List<Link> getConnectedNeighboor(){
+        List<Link> connected = new ArrayList();
+        for (int i = 0; i < 6; i++) {
+            if (active[i]){
+                connected.add(neighboors[i]);
+            }
+        }
+        return connected;
+    }
 
-    public Link[] getLinks() {
-        return new Link[0];
+    public void setLinked(boolean l){
+        this.linked = l;
+        if (l){
+            vector = LinkGraphics.getInstance().getLinkedDrawable(type);
+        } else {
+            vector = LinkGraphics.getInstance().getDrawable(type);
+        }
     }
 
     public void rotate() {
