@@ -126,7 +126,7 @@ public class Grid {
     private boolean seePieceLinked(Link l,List<Link> visited){
         visited.add(l);
         if (l.isConnected()){
-            List<Link> nbs = l.getConnectedNeighboor();
+            List<Link> nbs = l.getConnectedNeighbour();
             for (Link n : nbs){
                 if (n==null || visited.contains(n)) continue;
                 if (!seePieceLinked(n, visited)){
@@ -140,20 +140,20 @@ public class Grid {
     }
 
     // RANDOM FILLER:
-    public List<NeighborLink> getNeighborLinks(int x, int y){
-        List<NeighborLink> l = new ArrayList<>();
+    public List<NeighbourLink> getNeighbourLinks(int x, int y){
+        List<NeighbourLink> l = new ArrayList<>();
         boolean even = x%2==0;
         boolean isT = y%2==0;
         if (!even) isT = !isT;
 
         if (isT){
-            if (y>0) l.add(new NeighborLink(Link.TOP,x,y-1));
-            if (x>0) l.add(new NeighborLink(Link.BOTL,x-1,y));
-            if (x<this.mixedRows-1) l.add(new NeighborLink(Link.BOTR,x+1,y));
+            if (y>0) l.add(new NeighbourLink(Link.TOP,x,y-1));
+            if (x>0) l.add(new NeighbourLink(Link.BOTL,x-1,y));
+            if (x<this.mixedRows-1) l.add(new NeighbourLink(Link.BOTR,x+1,y));
         } else {
-            if (x>0) l.add(new NeighborLink(Link.TOPL,x-1,y));
-            if (x<this.mixedRows-1) l.add(new NeighborLink(Link.TOPR,x+1,y));
-            if (y<this.height-1) l.add(new NeighborLink(Link.BOT,x,y+1));
+            if (x>0) l.add(new NeighbourLink(Link.TOPL,x-1,y));
+            if (x<this.mixedRows-1) l.add(new NeighbourLink(Link.TOPR,x+1,y));
+            if (y<this.height-1) l.add(new NeighbourLink(Link.BOT,x,y+1));
         }
         return l;
     }
@@ -171,7 +171,7 @@ public class Grid {
             if (!res) i--;
         }
         convert(r,schema);
-        examineNeighbor();
+        examineNeighbours();
         validate();
     }
 
@@ -179,10 +179,10 @@ public class Grid {
         Node n2, n = getNode(s,x,y);
         if (n.value==3) return false;
 
-        List<NeighborLink> nbl = getNeighborLinks(x,y);
+        List<NeighbourLink> nbl = getNeighbourLinks(x, y);
         Collections.shuffle(nbl);
 
-        for (NeighborLink nl : nbl){
+        for (NeighbourLink nl : nbl){
             n2 = getNode(s,nl.x,nl.y);
             if (n2.value==3) continue;
 
@@ -222,18 +222,17 @@ public class Grid {
         }
     }
 
-    private void examineNeighbor(){
+    private void examineNeighbours(){
         for (int i=0; i<pieces.length; i++){
             for (int j=0; j<pieces[0].length; j++){
                 Link l = pieces[i][j];
 
                 if (l != null){// && l.getFreeLinks() > 0){
-                    List<NeighborLink> nbl = getNeighborLinks(i,j);
+                    List<NeighbourLink> nbl = getNeighbourLinks(i,j);
 
-                    for (NeighborLink nl : nbl){
+                    for (NeighbourLink nl : nbl){
                         Link l2 = pieces[nl.x][nl.y];
-                        if (l2!=null) l.setNeighboor(l2,nl.direction,false);
-                        //if (l2!=null) l.setNeighboor(l2,nl.direction);
+                        if (l2!=null) l.setNeighbour(l2, nl.direction);
                     }
                 }
             }
@@ -288,9 +287,9 @@ public class Grid {
         }
     }
 
-    class NeighborLink{
+    class NeighbourLink{
         public int direction,x,y;
-        public NeighborLink(int direction, int x, int y) {
+        public NeighbourLink(int direction, int x, int y) {
             this.direction = direction;
             this.x = x;
             this.y = y;
@@ -348,7 +347,7 @@ public class Grid {
                 k++;
             }
         }
-        examineNeighbor();
+        examineNeighbours();
         validate();
     }
 

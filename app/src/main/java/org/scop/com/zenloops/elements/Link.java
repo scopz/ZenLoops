@@ -28,7 +28,7 @@ public class Link implements Animate{
     public static final int MARGS_X = 156;
     public static final int MARGS_Y = 90;
 
-    private Link[] neighboors;
+    private Link[] neighbours;
     private boolean[] active;
     private int type;
     private boolean isTopRow;
@@ -42,7 +42,7 @@ public class Link implements Animate{
         this.posX = x;
         this.posY = y;
         this.active = new boolean[6];
-        this.neighboors = new Link[6];
+        this.neighbours = new Link[6];
 
         if (isTopRow){
             active[TOP]  = type >= TYPE3a;
@@ -67,20 +67,14 @@ public class Link implements Animate{
         vector = LinkGraphics.getInstance().getDrawable(type);
     }
 
-    public void setNeighboor(Link l, int position, boolean bidirectional){
-        this.neighboors[position] = l;
-        if (bidirectional) {
-            l.setNeighboor(this, (position + 3) % 6, false);
-        }
+    public void setNeighbour(Link l, int position){
+        this.neighbours[position] = l;
     }
-    public void setNeighboor(Link l, int position){
-        this.setNeighboor(l, position, true);
-    }
-    public List<Link> getConnectedNeighboor(){
+    public List<Link> getConnectedNeighbour(){
         List<Link> connected = new ArrayList();
         for (int i = 0; i < 6; i++) {
             if (active[i]){
-                connected.add(neighboors[i]);
+                connected.add(this.neighbours[i]);
             }
         }
         return connected;
@@ -128,22 +122,22 @@ public class Link implements Animate{
         }
     }
 
-    public int getNeighboorCount() {
+    public int getNeighbourCount() {
         int count = 0;
-        for (Link l : neighboors){
+        for (Link l : neighbours){
             if (l!=null) count++;
         }
         return count;
     }
 
     public int getFreeLinks(){
-        return getConnections()-getNeighboorCount();
+        return getConnections()-getNeighbourCount();
     }
 
     public boolean isConnected(){
         for (int i = 0; i < 6; i++) {
             if (active[i]){
-                if (neighboors[i]==null || !neighboors[i].isConnected(this,(i+3)%6))
+                if (this.neighbours[i]==null || !this.neighbours[i].isConnected(this,(i+3)%6))
                     return false;
             }
         }
@@ -151,7 +145,7 @@ public class Link implements Animate{
     }
 
     public boolean isConnected(Link me, int position){
-        return active[position] && neighboors[position] == me;
+        return active[position] && neighbours[position] == me;
     }
 
     public boolean itsMe(float x, float y){
