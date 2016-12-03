@@ -226,11 +226,14 @@ public class Grid {
         for (int i=0; i<pieces.length; i++){
             for (int j=0; j<pieces[0].length; j++){
                 Link l = pieces[i][j];
-                if (l != null && l.getFreeLinks() > 0){
+
+                if (l != null){// && l.getFreeLinks() > 0){
                     List<NeighborLink> nbl = getNeighborLinks(i,j);
+
                     for (NeighborLink nl : nbl){
                         Link l2 = pieces[nl.x][nl.y];
-                        if (l2!=null) l.setNeighboor(l2,nl.direction);
+                        if (l2!=null) l.setNeighboor(l2,nl.direction,false);
+                        //if (l2!=null) l.setNeighboor(l2,nl.direction);
                     }
                 }
             }
