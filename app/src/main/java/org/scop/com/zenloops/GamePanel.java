@@ -42,7 +42,7 @@ public class GamePanel extends View implements Animate {
             load = loadState();
         }
         if (!load){
-            grid = new Grid(this,10*5/3,21*5/3,0.755f,0.105f);
+            grid = new Grid(this,10*7/3,21*7/3,0.76f,0.105f);
             grid.randomFill();
         }
         this.scaleDetector = new ScaleGestureDetector(context, new ScaleListener());

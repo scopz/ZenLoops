@@ -1,6 +1,7 @@
 package org.scop.com.zenloops;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Window;
 import android.view.WindowManager;
@@ -24,6 +25,16 @@ public class GameActivity extends Activity {
         gamepanel = new GamePanel(this,true);
         setContentView(gamepanel);
     }
+
+    @Override
+    public void onBackPressed() {
+        //super.onBackPressed();
+        Intent a = new Intent(Intent.ACTION_MAIN);
+        a.addCategory(Intent.CATEGORY_HOME);
+        a.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(a);
+    }
+
 
     @Override
     protected void onPause() {
