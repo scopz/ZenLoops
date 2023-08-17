@@ -1,23 +1,45 @@
 package org.oar.zenloops
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.view.ViewTreeObserver
 import android.view.Window
+import android.view.WindowInsets
 import androidx.appcompat.app.AppCompatActivity
+import org.oar.zenloops.elements.Grid
+import org.oar.zenloops.elements.LinkGraphics
+import org.oar.zenloops.ui.views.GameView
+import org.oar.zenloops.utils.SaveStateUtils.loadState
 
-class GameActivity : AppCompatActivity() {
-    private lateinit var gamePanel: GamePanel
+class GameActivity : Activity() {
+    private val gameView: GameView by lazy { findViewById(R.id.panel) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         requestWindowFeature(Window.FEATURE_NO_TITLE)
-        supportActionBar?.hide()
 
-        //val level = this.intent.extras?.getInt("level") ?: 0
+        setContentView(R.layout.activity_playing_grid)
 
-        gamePanel = GamePanel(this, true)
-        setContentView(gamePanel)
+        window.insetsController?.apply {
+            hide(WindowInsets.Type.statusBars())
+            hide(WindowInsets.Type.navigationBars())
+        }
+
+        val grid = gameView.loadState()
+            ?: Grid(gameView, 46, 49, 0.76f, 0.105f).apply { randomFill() }
+
+        gameView.viewTreeObserver.addOnGlobalLayoutListener(
+            object: ViewTreeObserver.OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    // at this point, view dimensions are set (view.width and view.height)
+                    gameView.setGrid(grid)
+                    gameView.postInvalidate()
+                    // make sure it is only executed once:
+                    gameView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                }
+            }
+        )
     }
 
     override fun onBackPressed() {
@@ -29,6 +51,7 @@ class GameActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        gamePanel.saveState()
+        gameView.saveState()
     }
+
 }

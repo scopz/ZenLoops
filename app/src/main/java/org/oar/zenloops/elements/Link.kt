@@ -1,74 +1,88 @@
 package org.oar.zenloops.elements
 
-import android.graphics.Canvas
+import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import org.oar.zenloops.core.Animate
+import org.oar.zenloops.core.CanvasWrapper
 import org.oar.zenloops.core.ViewAnimator
+import org.oar.zenloops.elements.LinkGraphics.HEIGHT
+import org.oar.zenloops.elements.LinkGraphics.MARGIN_X
+import org.oar.zenloops.elements.LinkGraphics.MARGIN_Y
+import org.oar.zenloops.elements.LinkGraphics.MARGIN_Y_STEP
+import org.oar.zenloops.elements.LinkGraphics.WIDTH
+import org.oar.zenloops.models.LinkType
+import org.oar.zenloops.models.Position
 
 class Link(
-    private val view: ViewAnimator,
     val type: LinkType,
-    private val posX: Int,
-    private val posY: Int,
+    val pos: Position,
+    var view: ViewAnimator? = null,
 ) : Animate {
+    private val isTopRow: Boolean = (pos.x + pos.y) % 2 == 0
 
-    companion object {
-        const val MARGS_X = 156
-        const val MARGS_Y = 90
-    }
-
-    private val isTopRow: Boolean = (posX + posY) % 2 == 0
-
-    private val neighbours = mutableMapOf<LinkPosition, Link>()
-    private var active = listOf<LinkPosition>()
+    private val neighbors = mutableMapOf<LinkPosition, Link>()
+    private var tentacles = listOf<LinkPosition>()
 
     private var visibleRotation = 0
     var rotation = 0
         private set
 
-    private var vector: Drawable
+    private var drawable: Drawable
     private var linked = false
 
+    val rect = Rect().apply {
+        left = pos.x * MARGIN_X
+        right = left + WIDTH
+        top = pos.y * MARGIN_Y
+        if (!isTopRow) {
+            top += MARGIN_Y_STEP
+        }
+        bottom = top + HEIGHT
+    }
+
     init {
-        val mutableActive = mutableListOf<LinkPosition>()
+        val mutableTentacles = mutableListOf<LinkPosition>()
 
         if (isTopRow) {
-            mutableActive.add(LinkPosition.BOT_RIGHT)
+            mutableTentacles.add(LinkPosition.BOT_RIGHT)
             if (type >= LinkType.DOUBLE) {
-                mutableActive.add(LinkPosition.BOT_LEFT)
+                mutableTentacles.add(LinkPosition.BOT_LEFT)
                 if (type >= LinkType.TRIPLE)
-                    mutableActive.add(LinkPosition.TOP)
+                    mutableTentacles.add(LinkPosition.TOP)
             }
 
-            active = mutableActive
             rotation = 0
             visibleRotation = 0
         } else {
-            mutableActive.add(LinkPosition.BOT)
+            mutableTentacles.add(LinkPosition.BOT)
             if (type >= LinkType.DOUBLE) {
-                mutableActive.add(LinkPosition.TOP_LEFT)
+                mutableTentacles.add(LinkPosition.TOP_LEFT)
                 if (type >= LinkType.TRIPLE)
-                    mutableActive.add(LinkPosition.TOP_RIGHT)
+                    mutableTentacles.add(LinkPosition.TOP_RIGHT)
             }
 
-            active = mutableActive
             rotation = 60
             visibleRotation = 60
         }
-        vector = LinkGraphics.getDrawable(type)
+
+        tentacles = mutableTentacles
+        drawable = LinkGraphics.getDrawable(type)
     }
 
-
-    fun setNeighbour(link: Link, position: LinkPosition) {
-        neighbours[position] = link
+    operator fun set(position: LinkPosition, link: Link) {
+        neighbors[position] = link
     }
 
-    fun getConnectedNeighbour() = active.mapNotNull { neighbours[it] }
+    operator fun get(position: LinkPosition): Link? {
+        return neighbors[position]
+    }
 
-    fun setLinked(linked: Boolean) {
+    fun getConnectedNeighbour() = tentacles.mapNotNull { this[it] }
+
+    fun setLinkedState(linked: Boolean) {
         this.linked = linked
 
-        vector = if (linked) {
+        drawable = if (linked) {
             LinkGraphics.getLinkedDrawable(type)
         } else {
             LinkGraphics.getDrawable(type)
@@ -79,10 +93,10 @@ class Link(
         rotation += 120
         rotation %= 360
 
-        active = active.map { it.next }
+        tentacles = tentacles.map { it.next }
 
         if (animate) {
-            view.addAnimation(this)
+            view?.addAnimation(this)
         } else {
             visibleRotation = rotation
         }
@@ -96,71 +110,35 @@ class Link(
 
 
     fun isConnected(): Boolean {
-        return !active.any {
-            val neighbor = neighbours[it]
+        return tentacles.none {
+            val neighbor = neighbors[it]
             neighbor == null || !neighbor.isConnected(this, it.oposite)
         }
     }
 
     private fun isConnected(other: Link, position: LinkPosition): Boolean {
-        return active.contains(position) && neighbours[position] === other
+        return tentacles.contains(position) && neighbors[position] === other
     }
 
-    fun itsMe(x: Float, y: Float): Boolean {
-        val x0 = (posX * MARGS_X).toFloat()
-        var y0 = (posY * MARGS_Y * 3).toFloat()
-        if (!isTopRow) {
-            y0 += MARGS_Y.toFloat()
-        }
+    fun draw(canvasW: CanvasWrapper) {
+        if (Rect.intersects(canvasW.viewport, rect)) {
+            val canvas = canvasW.canvas
 
-        val xf = x0 + LinkGraphics.WIDTH
-        val yf = y0 + LinkGraphics.HEIGHT
+            drawable.bounds = rect
 
-        return x in x0..xf && y in y0..yf
-    }
+            if (visibleRotation == 0) {
+                drawable.draw(canvas)
 
-    fun draw(
-        canvas: Canvas,
-        parentX: Float,
-        parentY: Float,
-        scale: Float,
-        wCut: Float,
-        hCut: Float
-    ) {
-        val x = posX * MARGS_X + parentX
-        var y = posY * MARGS_Y * 3 + parentY
-        if (!isTopRow) {
-            y += MARGS_Y.toFloat()
-        }
-
-        if (x > wCut || y > hCut) {
-            return
-        }
-
-        val xScaled = (x * scale).toInt()
-        val yScaled = (y * scale).toInt()
-
-        val xwScaled = xScaled + LinkGraphics.WIDTH * scale
-        val yhScaled = yScaled + LinkGraphics.HEIGHT * scale
-
-        if (xwScaled < 0 || yhScaled < 0) {
-            return
-        }
-
-        vector.setBounds(xScaled, yScaled, xwScaled.toInt(), yhScaled.toInt())
-
-        if (visibleRotation == 0) {
-            vector.draw(canvas)
-
-        } else {
-            val canvasSaved = canvas.save()
-            canvas.rotate(
-                visibleRotation.toFloat(),
-                xScaled + LinkGraphics.WIDTH / 2 * scale,
-                yScaled + LinkGraphics.HEIGHT / 2 * scale
-            )
-            vector.draw(canvas)
-            canvas.restoreToCount(canvasSaved)
+            } else {
+                val canvasSaved = canvas.save()
+                canvas.rotate(
+                    visibleRotation.toFloat(),
+                    rect.exactCenterX(),
+                    rect.exactCenterY()
+                )
+                drawable.draw(canvas)
+                canvas.restoreToCount(canvasSaved)
+            }
         }
     }
 }

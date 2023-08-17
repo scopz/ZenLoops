@@ -1,10 +1,15 @@
 package org.oar.zenloops.core
 
 import android.content.Context
+import android.util.AttributeSet
 import android.view.View
 import kotlin.math.roundToLong
 
-open class ViewAnimator(context: Context): View(context) {
+open class ViewAnimator(
+    context: Context,
+    attrs: AttributeSet,
+): View(context, attrs) {
+
     private val animations = mutableSetOf<Animate>()
 
     private var framer: Framer? = null

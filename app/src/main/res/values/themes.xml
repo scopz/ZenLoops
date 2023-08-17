@@ -13,4 +13,13 @@
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
     </style>
+
+    <style name="Theme.ZenLoops.NoActionBar" parent="Theme.ZenLoops">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="FullscreenTheme" parent="Theme.ZenLoops.NoActionBar">
+        <item name="android:windowFullscreen">true</item>
+    </style>
 </resources>
