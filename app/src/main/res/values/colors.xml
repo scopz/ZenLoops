@@ -6,6 +6,6 @@
     <color name="light">#FEEE</color>
 
     <color name="uniqueColor">@color/dark</color>
-    <color name="backgroundColor">@color/dark</color>
+    <color name="backgroundColor">@color/black</color>
     <color name="endBackgroundColor">@color/light</color>
 </resources>
