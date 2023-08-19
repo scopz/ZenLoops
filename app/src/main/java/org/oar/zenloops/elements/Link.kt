@@ -1,7 +1,8 @@
 package org.oar.zenloops.elements
 
+import android.graphics.Bitmap
+import android.graphics.Paint
 import android.graphics.Rect
-import android.graphics.drawable.Drawable
 import org.oar.zenloops.core.Animate
 import org.oar.zenloops.core.CanvasWrapper
 import org.oar.zenloops.core.ViewAnimator
@@ -27,7 +28,7 @@ class Link(
     var rotation = 0
         private set
 
-    private var drawable: Drawable
+    private var bitmap: Bitmap
     private var linked = false
 
     val rect = Rect().apply {
@@ -66,7 +67,7 @@ class Link(
         }
 
         tentacles = mutableTentacles
-        drawable = LinkGraphics.getDrawable(type)
+        bitmap = LinkGraphics.getBitmap(type)
     }
 
     operator fun set(position: LinkPosition, link: Link) {
@@ -82,10 +83,10 @@ class Link(
     fun setLinkedState(linked: Boolean) {
         this.linked = linked
 
-        drawable = if (linked) {
-            LinkGraphics.getLinkedDrawable(type)
+        bitmap = if (linked) {
+            LinkGraphics.getLinkedBitmap(type)
         } else {
-            LinkGraphics.getDrawable(type)
+            LinkGraphics.getBitmap(type)
         }
     }
 
@@ -124,10 +125,8 @@ class Link(
         if (Rect.intersects(canvasW.viewport, rect)) {
             val canvas = canvasW.canvas
 
-            drawable.bounds = rect
-
             if (visibleRotation == 0) {
-                drawable.draw(canvas)
+                canvas.drawBitmap(bitmap, null, rect, Paint())
 
             } else {
                 val canvasSaved = canvas.save()
@@ -136,7 +135,7 @@ class Link(
                     rect.exactCenterX(),
                     rect.exactCenterY()
                 )
-                drawable.draw(canvas)
+                canvas.drawBitmap(bitmap, null, rect, Paint())
                 canvas.restoreToCount(canvasSaved)
             }
         }

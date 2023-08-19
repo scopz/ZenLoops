@@ -1,6 +1,8 @@
 package org.oar.zenloops.grid
 
 import android.view.View
+import org.oar.zenloops.elements.LinkGraphics.MAX_SCALE
+import org.oar.zenloops.elements.LinkGraphics.MIN_SCALE
 import org.oar.zenloops.utils.ScreenProperties.toDpi
 
 class GridPosition(
@@ -15,8 +17,6 @@ class GridPosition(
     var scale = scale
         private set
 
-    private val minScale = 0.15f
-    private val maxScale = 2f
     private var contentWidth = 0f
     private var contentHeight = 0f
 
@@ -51,7 +51,7 @@ class GridPosition(
     }
 
     fun zoom(ratio: Float, view: View) {
-        val newScale = (scale * ratio).coerceIn(minScale, maxScale)
+        val newScale = (scale * ratio).coerceIn(MIN_SCALE, MAX_SCALE)
         val ratioApplied = newScale / scale
         scale = newScale
 

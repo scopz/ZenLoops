@@ -8,4 +8,7 @@
     <color name="uniqueColor">@color/dark</color>
     <color name="backgroundColor">@color/black</color>
     <color name="endBackgroundColor">@color/light</color>
+
+    <color name="fadedLinkColor">#525252</color>
+    <color name="activeLinkColor">#888888</color>
 </resources>
