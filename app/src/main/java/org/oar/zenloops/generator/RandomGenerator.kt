@@ -9,15 +9,16 @@ import org.oar.zenloops.utils.GridUtils.getPossibleLinks
 import java.util.*
 import kotlin.math.roundToInt
 
-class RandomGenerator : GridGenerator {
+open class RandomGenerator(
+    val percent: Float = 0.76f,
+    val tolerance: Float = 0.105f
+) : GridGenerator {
 
     inner class NodePositions: ArrayList<Position>()
 
     override fun generateNewGrid(grid: Grid) {
         val w = grid.width
         val h = grid.height
-        val tolerance = grid.tolerance
-        val percent = grid.percent
 
         val random = Random()
         val schema = Matrix<NodePositions>(w, h)

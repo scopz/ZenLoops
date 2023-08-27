@@ -6,11 +6,8 @@ import android.os.Bundle
 import android.view.ViewTreeObserver
 import android.view.Window
 import android.view.WindowInsets
-import androidx.appcompat.app.AppCompatActivity
 import org.oar.zenloops.elements.Grid
-import org.oar.zenloops.elements.LinkGraphics
 import org.oar.zenloops.ui.views.GameView
-import org.oar.zenloops.utils.SaveStateUtils.loadState
 
 class GameActivity : Activity() {
     private val gameView: GameView by lazy { findViewById(R.id.panel) }
@@ -27,7 +24,7 @@ class GameActivity : Activity() {
         }
 
         val grid = gameView.loadState()
-            ?: Grid(gameView, 46, 49, 0.76f, 0.105f).apply { randomFill() }
+            ?: Grid(gameView, 46, 49).apply { randomFill() }
 
         gameView.viewTreeObserver.addOnGlobalLayoutListener(
             object: ViewTreeObserver.OnGlobalLayoutListener {

@@ -89,8 +89,6 @@ object GridUtils {
         val sb = StringBuilder()
             .append(width).append(":")
             .append(height).append(":")
-            .append((percent * 10000).toInt()).append(":")
-            .append((tolerance * 10000).toInt()).append(":")
 
         links.forEachWithPositionComplete { _, l ->
             val char = if (l == null) {

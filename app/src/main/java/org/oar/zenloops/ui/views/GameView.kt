@@ -2,18 +2,15 @@ package org.oar.zenloops.ui.views
 
 import android.animation.ArgbEvaluator
 import android.content.Context
-import android.content.ContextWrapper
 import android.graphics.Canvas
 import android.util.AttributeSet
 import android.view.MotionEvent
-import android.view.ViewTreeObserver
 import androidx.core.content.ContextCompat
 import org.oar.zenloops.R
 import org.oar.zenloops.core.Animate
 import org.oar.zenloops.core.CanvasWrapper
 import org.oar.zenloops.core.ViewAnimator
 import org.oar.zenloops.elements.Grid
-import org.oar.zenloops.elements.LinkGraphics
 import org.oar.zenloops.grid.GridPosition
 import org.oar.zenloops.grid.GridTouchControl
 import org.oar.zenloops.grid.GridTouchListener
@@ -22,7 +19,8 @@ import org.oar.zenloops.utils.GridUtils.linksFromPack
 import org.oar.zenloops.utils.GridUtils.toPack
 import org.oar.zenloops.utils.SaveStateUtils.loadState
 import org.oar.zenloops.utils.SaveStateUtils.saveState
-import java.io.*
+import java.io.EOFException
+import java.io.IOException
 import kotlin.math.min
 
 class GameView(
@@ -128,19 +126,17 @@ class GameView(
             val grid = Grid(
                 this,
                 width = read[0].toInt(),
-                height = read[1].toInt(),
-                percent = read[2].toInt() / 10000f,
-                tolerance = read[3].toInt() / 10000f
+                height = read[1].toInt()
             )
 
-            val loadedLinks = grid.linksFromPack(read[4])
+            val loadedLinks = grid.linksFromPack(read[2])
             grid.links.clear()
             grid.links.putAll(loadedLinks)
 
             gridPosition.setValues(
-                -read[5].toInt().toFloat(),
-                -read[6].toInt().toFloat(),
-                read[7].toInt() / 100f
+                -read[3].toInt().toFloat(),
+                -read[4].toInt().toFloat(),
+                read[5].toInt() / 100f
             )
 
             return grid

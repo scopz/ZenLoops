@@ -18,8 +18,6 @@ class Grid(
     private val view: ViewAnimator,
     val width: Int,
     val height: Int,
-    val percent: Float = 0.755f,
-    val tolerance: Float = 0.105f
 ) {
     val links = Matrix<Link>(width, height)
 
