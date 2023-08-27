@@ -21,21 +21,34 @@ open class RandomGenerator(
         val h = grid.height
 
         val random = Random()
-        val schema = Matrix<NodePositions>(w, h)
-
         val totalLinks = (w * h * (random.nextFloat() * tolerance * 2-tolerance+percent))
             .roundToInt()
+
+        val schema = Matrix<NodePositions>(w, h)
+
+        addRandomLinks(grid, schema, totalLinks)
+
+        grid.links.apply {
+            clear()
+            putAll(schema.toLinkMatrix())
+        }
+    }
+
+    protected fun addRandomLinks(
+        grid: Grid,
+        schema: Matrix<NodePositions>,
+        totalLinks: Int
+    ) {
+        val random = Random()
+
+        val w = schema.maxW
+        val h = schema.maxH
 
         var i = 0
         while (i < totalLinks) {
             val x = random.nextInt(w)
             val y = random.nextInt(h)
             if (tryAddLink(grid, schema, Position(x, y))) i++
-        }
-
-        grid.links.apply {
-            clear()
-            putAll(schema.toLinkMatrix())
         }
     }
 
@@ -56,11 +69,11 @@ open class RandomGenerator(
 
 
 
-    private fun getOrCreateNode(schema: Matrix<NodePositions>, pos: Position): NodePositions {
+    protected fun getOrCreateNode(schema: Matrix<NodePositions>, pos: Position): NodePositions {
         return schema[pos] ?: NodePositions().apply { schema[pos] = this }
     }
 
-    private fun Matrix<NodePositions>.toLinkMatrix(): Matrix<Link> {
+    protected fun Matrix<NodePositions>.toLinkMatrix(): Matrix<Link> {
         val random = Random()
         val linksMatrix = Matrix<Link>(maxW, maxH)
 

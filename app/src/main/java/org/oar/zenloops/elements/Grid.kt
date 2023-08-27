@@ -8,7 +8,7 @@ import org.oar.zenloops.elements.LinkGraphics.MARGIN_X
 import org.oar.zenloops.elements.LinkGraphics.MARGIN_Y
 import org.oar.zenloops.elements.LinkGraphics.MARGIN_Y_STEP
 import org.oar.zenloops.elements.LinkGraphics.WIDTH
-import org.oar.zenloops.generator.RandomGenerator
+import org.oar.zenloops.generator.RootRandomGenerator
 import org.oar.zenloops.grid.GridPosition
 import org.oar.zenloops.models.Point
 import org.oar.zenloops.utils.GridUtils.getLinkByScreenCoords
@@ -32,7 +32,7 @@ class Grid(
         initializeLinks()
     }
     fun randomFill() {
-        RandomGenerator().generateNewGrid(this)
+        RootRandomGenerator().generateNewGrid(this)
     }
 
     fun initializeLinks() {
